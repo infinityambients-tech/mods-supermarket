@@ -8,6 +8,8 @@ IMPLEMENTED FEATURES:
 - [x] Experience Points (XP) Editor
 - [x] Store Upgrade Points (Expansion Points)
 - [x] One-Click License Unlocker (All products)
+- [x] Infinite Customer Satisfaction (Store Rating)
+- [x] Staff Stat Booster (Max Speed & Accuracy)
 - [x] Advanced Save Detection System
 - [x] Automatic Backup System
 

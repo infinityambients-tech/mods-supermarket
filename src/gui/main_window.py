@@ -134,6 +134,9 @@ class MoneyBoosterGUI:
         self.points_label = ttk.Label(stats_frame, text=self.language.get("current_points").format("0"))
         self.points_label.pack(pady=2)
         
+        self.rating_label = ttk.Label(stats_frame, text=self.language.get("current_rating").format("0"))
+        self.rating_label.pack(pady=2)
+        
         # Input Controls
         control_frame = ttk.Frame(main_frame)
         control_frame.pack(pady=15, fill="x")
@@ -178,11 +181,24 @@ class MoneyBoosterGUI:
         self.set_points_btn = ttk.Button(points_row, text=self.language.get("set_points_button"), command=self.set_points)
         self.set_points_btn.pack(side="left", padx=2)
 
-        # License Unlock Row
-        license_row = ttk.Frame(control_frame)
-        license_row.pack(fill="x", pady=10)
-        self.unlock_btn = ttk.Button(license_row, text=self.language.get("unlock_licenses_button"), command=self.unlock_licenses)
-        self.unlock_btn.pack(fill="x")
+        # Rating Row
+        rating_row = ttk.Frame(control_frame)
+        rating_row.pack(fill="x", pady=2)
+        ttk.Label(rating_row, text=self.language.get("current_rating").split(":")[0] + ":", width=15).pack(side="left")
+        self.rating_entry = ttk.Entry(rating_row, width=15)
+        self.rating_entry.pack(side="left", padx=5)
+        self.set_rating_btn = ttk.Button(rating_row, text=self.language.get("set_rating_button"), command=self.set_rating)
+        self.set_rating_btn.pack(side="left", padx=2)
+
+        # Utility Buttons Row
+        util_row = ttk.Frame(control_frame)
+        util_row.pack(fill="x", pady=10)
+        
+        self.unlock_btn = ttk.Button(util_row, text=self.language.get("unlock_licenses_button"), command=self.unlock_licenses)
+        self.unlock_btn.pack(side="left", fill="x", expand=True, padx=2)
+        
+        self.boost_staff_btn = ttk.Button(util_row, text=self.language.get("boost_staff_button"), command=self.boost_staff)
+        self.boost_staff_btn.pack(side="left", fill="x", expand=True, padx=2)
         
         self.backup_btn = ttk.Button(main_frame, text=self.language.get("backup_button"), command=self.create_backup)
         self.backup_btn.pack(pady=10)
@@ -210,6 +226,7 @@ class MoneyBoosterGUI:
             self.level_label.config(text=self.language.get("current_level").format(int(stats['level'] or 0)))
             self.xp_label.config(text=self.language.get("current_xp").format(int(stats['xp'] or 0)))
             self.points_label.config(text=self.language.get("current_points").format(int(stats['points'] or 0)))
+            self.rating_label.config(text=self.language.get("current_rating").format(f"{stats['rating'] or 0:.1f}"))
         else:
             self.status_label.config(text=self.language.get("status_no_save"))
 
@@ -269,6 +286,30 @@ class MoneyBoosterGUI:
         except ValueError:
             messagebox.showerror(self.language.get("error_title"), "Enter valid points integer!")
 
+    def set_rating(self):
+        if not self.current_save_path:
+            messagebox.showerror(self.language.get("error_title"), "No save file selected.")
+            return
+        try:
+            rating = float(self.rating_entry.get())
+            if self.save_editor.modify_rating(self.current_save_path, rating):
+                messagebox.showinfo(self.language.get("success_title"), self.language.get("success_rating").format(rating))
+                self.update_info()
+            else:
+                messagebox.showerror(self.language.get("error_title"), "Failed to modify rating.")
+        except ValueError:
+            messagebox.showerror(self.language.get("error_title"), "Enter valid rating number!")
+
+    def boost_staff(self):
+        if not self.current_save_path:
+            messagebox.showerror(self.language.get("error_title"), "No save file selected.")
+            return
+        if self.save_editor.boost_staff_stats(self.current_save_path):
+            messagebox.showinfo(self.language.get("success_title"), self.language.get("success_staff"))
+            self.update_info()
+        else:
+            messagebox.showerror(self.language.get("error_title"), "Failed to boost staff stats. Make sure you have hired employees!")
+
     def unlock_licenses(self):
         if not self.current_save_path:
             messagebox.showerror(self.language.get("error_title"), "No save file selected.")
@@ -320,6 +361,8 @@ class MoneyBoosterGUI:
         self.max_level_btn.config(text=self.language.get("max_level_button"))
         self.set_xp_btn.config(text=self.language.get("set_xp_button"))
         self.set_points_btn.config(text=self.language.get("set_points_button"))
+        self.set_rating_btn.config(text=self.language.get("set_rating_button"))
+        self.boost_staff_btn.config(text=self.language.get("boost_staff_button"))
         self.unlock_btn.config(text=self.language.get("unlock_licenses_button"))
         self.backup_btn.config(text=self.language.get("backup_button"))
         self.create_menu()
