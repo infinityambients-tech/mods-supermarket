@@ -79,10 +79,20 @@ class MoneyBoosterGUI:
         
         # Tab 1: Quick Mod (Legacy GUI)
         self.quick_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.quick_tab, text="Quick Mod")
+        self.notebook.add(self.quick_tab, text=self.language.get("tab_quick"))
         self._setup_quick_tab(self.quick_tab)
         
-        # Tab 2: Advanced Detection
+        # Tab 2: Advanced Stats
+        self.advanced_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.advanced_tab, text=self.language.get("tab_advanced"))
+        self._setup_advanced_tab(self.advanced_tab)
+
+        # Tab 3: Object Editor
+        self.objects_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.objects_tab, text=self.language.get("tab_objects"))
+        self._setup_objects_tab(self.objects_tab)
+
+        # Tab 4: Advanced Detection
         self.detection_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.detection_tab, text="Advanced Detection")
         self.detection_gui = SaveDetectionGUI(
@@ -91,6 +101,10 @@ class MoneyBoosterGUI:
             self.multi_save_manager,
             on_save_selected=self.handle_detection_selection
         )
+        
+        # Polling for file changes
+        self._last_mtime = 0
+        self.root.after(2000, self._check_file_changes)
         
         # Settings Bar (Common)
         settings_frame = ttk.Frame(self.root)
@@ -212,6 +226,85 @@ class MoneyBoosterGUI:
         self.restore_btn = ttk.Button(main_frame, text=self.language.get("restore_button"), command=self.restore_backup)
         self.restore_btn.pack(pady=5)
 
+    def _setup_advanced_tab(self, parent):
+        main_frame = ttk.Frame(parent, padding="20")
+        main_frame.pack(fill="both", expand=True)
+
+        # Stats labels
+        self.clean_label = ttk.Label(main_frame, text="Cleaning Stats: 0")
+        self.clean_label.pack(pady=5)
+        self.orders_done_label = ttk.Label(main_frame, text=self.language.get("orders_completed").format(0))
+        self.orders_done_label.pack(pady=5)
+        self.orders_failed_label = ttk.Label(main_frame, text=self.language.get("orders_failed").format(0))
+        self.orders_failed_label.pack(pady=5)
+
+        # Controls
+        ctrl = ttk.Frame(main_frame)
+        ctrl.pack(fill="x", pady=20)
+
+        ttk.Button(ctrl, text=self.language.get("clean_stats_btn"), 
+                   command=self.reset_cleaning).pack(fill="x", pady=5)
+
+        order_row = ttk.Frame(ctrl)
+        order_row.pack(fill="x", pady=5)
+        ttk.Label(order_row, text="Done/Failed:").pack(side="left")
+        self.order_done_entry = ttk.Entry(order_row, width=8)
+        self.order_done_entry.pack(side="left", padx=5)
+        self.order_failed_entry = ttk.Entry(order_row, width=8)
+        self.order_failed_entry.pack(side="left", padx=5)
+        ttk.Button(order_row, text=self.language.get("set_orders_btn"),
+                   command=self.set_orders).pack(side="left")
+
+    def _setup_objects_tab(self, parent):
+        main_frame = ttk.Frame(parent, padding="10")
+        main_frame.pack(fill="both", expand=True)
+
+        # Object List
+        list_frame = ttk.Frame(main_frame)
+        list_frame.pack(fill="both", expand=True)
+
+        self.obj_list = ttk.Treeview(list_frame, columns=("ID", "Type", "Pos"), show="headings", height=5)
+        self.obj_list.heading("ID", text="Index")
+        self.obj_list.heading("Type", text="Object Type")
+        self.obj_list.heading("Pos", text="Position")
+        self.obj_list.column("ID", width=50)
+        self.obj_list.column("Type", width=150)
+        self.obj_list.column("Pos", width=200)
+        self.obj_list.pack(side="left", fill="both", expand=True)
+        
+        sb = ttk.Scrollbar(list_frame, orient="vertical", command=self.obj_list.yview)
+        self.obj_list.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        
+        self.obj_list.bind("<<TreeviewSelect>>", self.on_object_select)
+
+        # Editor
+        edit_frame = ttk.LabelFrame(main_frame, text="Transform Editor", padding="10")
+        edit_frame.pack(fill="x", pady=5)
+
+        row1 = ttk.Frame(edit_frame)
+        row1.pack(fill="x")
+        ttk.Label(row1, text="X:").pack(side="left")
+        self.obj_x = ttk.Entry(row1, width=8)
+        self.obj_x.pack(side="left", padx=2)
+        ttk.Label(row1, text="Y:").pack(side="left")
+        self.obj_y = ttk.Entry(row1, width=8)
+        self.obj_y.pack(side="left", padx=2)
+        ttk.Label(row1, text="Z:").pack(side="left")
+        self.obj_z = ttk.Entry(row1, width=8)
+        self.obj_z.pack(side="left", padx=2)
+
+        row2 = ttk.Frame(edit_frame)
+        row2.pack(fill="x", pady=5)
+        ttk.Label(row2, text="Rot(Y):").pack(side="left")
+        self.obj_rot_y = ttk.Entry(row2, width=8)
+        self.obj_rot_y.pack(side="left", padx=5)
+        
+        ttk.Button(edit_frame, text=self.language.get("save_obj_btn"), 
+                   command=self.save_object_transform).pack(side="right")
+        ttk.Button(edit_frame, text=self.language.get("refresh_objs"), 
+                   command=self.refresh_objects).pack(side="right", padx=5)
+
     def create_menu(self):
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
@@ -236,8 +329,80 @@ class MoneyBoosterGUI:
             self.xp_label.config(text=self.language.get("current_xp").format(int(stats['xp'] or 0)))
             self.points_label.config(text=self.language.get("current_points").format(int(stats['points'] or 0)))
             self.rating_label.config(text=self.language.get("current_rating").format(f"{stats['rating'] or 0:.1f}"))
+            
+            # Advanced
+            self.clean_label.config(text=f"Cleaning Count: {stats.get('cleaning', 0)}")
+            self.orders_done_label.config(text=self.language.get("orders_completed").format(stats.get('orders_done', 0)))
+            self.orders_failed_label.config(text=self.language.get("orders_failed").format(stats.get('orders_failed', 0)))
+            
+            self._last_mtime = self.current_save_path.stat().st_mtime
         else:
             self.status_label.config(text=self.language.get("status_no_save"))
+
+    def _check_file_changes(self):
+        """Automatically reloads data if file changes on disk."""
+        if self.current_save_path and self.current_save_path.exists():
+            try:
+                mtime = self.current_save_path.stat().st_mtime
+                if mtime > self._last_mtime:
+                    self.update_info()
+            except:
+                pass
+        self.root.after(5000, self._check_file_changes)
+
+    def reset_cleaning(self):
+        if self.current_save_path and self.save_editor.modify_cleaning_stats(self.current_save_path, 0):
+            messagebox.showinfo("Success", "Cleaning stats reset!")
+            self.update_info()
+
+    def set_orders(self):
+        if not self.current_save_path: return
+        try:
+            done = int(self.order_done_entry.get())
+            failed = int(self.order_failed_entry.get())
+            if self.save_editor.modify_order_stats(self.current_save_path, done, failed):
+                messagebox.showinfo("Success", "Orders updated!")
+                self.update_info()
+        except:
+            messagebox.showerror("Error", "Enter valid integers!")
+
+    def refresh_objects(self):
+        if not self.current_save_path: return
+        for it in self.obj_list.get_children(): self.obj_list.delete(it)
+        objects = self.save_editor.get_placed_objects(self.current_save_path)
+        for i, obj in enumerate(objects):
+            otype = obj.get('FurnitureType', 'Unknown')
+            t = obj.get('Transform', {}).get('Position', {}).get('value', {})
+            pos_str = f"{t.get('x',0):.1f}, {t.get('y',0):.1f}, {t.get('z',0):.1f}"
+            self.obj_list.insert("", "end", values=(i, otype, pos_str))
+
+    def on_object_select(self, event):
+        selected = self.obj_list.selection()
+        if not selected: return
+        idx = int(self.obj_list.item(selected[0])['values'][0])
+        objects = self.save_editor.get_placed_objects(self.current_save_path)
+        if 0 <= idx < len(objects):
+            obj = objects[idx]
+            pos = obj.get('Transform', {}).get('Position', {}).get('value', {})
+            rot = obj.get('Transform', {}).get('Rotation', {}).get('value', {})
+            
+            self.obj_x.delete(0, tk.END); self.obj_x.insert(0, str(pos.get('x', 0)))
+            self.obj_y.delete(0, tk.END); self.obj_y.insert(0, str(pos.get('y', 0)))
+            self.obj_z.delete(0, tk.END); self.obj_z.insert(0, str(pos.get('z', 0)))
+            self.obj_rot_y.delete(0, tk.END); self.obj_rot_y.insert(0, str(rot.get('y', 0)))
+
+    def save_object_transform(self):
+        selected = self.obj_list.selection()
+        if not selected or not self.current_save_path: return
+        idx = int(self.obj_list.item(selected[0])['values'][0])
+        try:
+            pos = {'x': float(self.obj_x.get()), 'y': float(self.obj_y.get()), 'z': float(self.obj_z.get())}
+            rot = {'y': float(self.obj_rot_y.get())}
+            if self.save_editor.update_object_transform(self.current_save_path, idx, pos, rot):
+                messagebox.showinfo("Success", "Object transform updated!")
+                self.refresh_objects()
+        except:
+            messagebox.showerror("Error", "Enter valid coordinates!")
 
     def add_money(self):
         if not self.current_save_path:

@@ -6,9 +6,36 @@ import shutil
 from pathlib import Path
 
 class GitHubUpdater:
+    LOCK_FILE = "update.lock"
+
     def __init__(self, repo_owner, repo_name, current_version):
         self.repo_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
         self.current_version = current_version
+        self._cleanup_stale_lock()
+
+    def _cleanup_stale_lock(self):
+        """Removes lock file if it's older than 5 minutes."""
+        if os.path.exists(self.LOCK_FILE):
+            try:
+                age = os.path.getmtime(self.LOCK_FILE)
+                if (os.path.getmtime(self.LOCK_FILE) - age) > 300:
+                    os.remove(self.LOCK_FILE)
+            except:
+                pass
+
+    def _acquire_lock(self):
+        if os.path.exists(self.LOCK_FILE):
+            return False
+        with open(self.LOCK_FILE, "w") as f:
+            f.write(str(os.getpid()))
+        return True
+
+    def _release_lock(self):
+        if os.path.exists(self.LOCK_FILE):
+            try:
+                os.remove(self.LOCK_FILE)
+            except:
+                pass
     
     def check_for_updates(self):
         try:
@@ -17,6 +44,11 @@ class GitHubUpdater:
                 latest_release = response.json()
                 latest_version = latest_release.get('tag_name', '').lstrip('v')
                 
+                # Check for lock
+                if latest_version != self.current_version and os.path.exists(self.LOCK_FILE):
+                    print("Update in progress by another instance.")
+                    return {'available': False}
+
                 if self.is_newer(latest_version):
                     return {
                         'available': True,
@@ -69,6 +101,9 @@ class GitHubUpdater:
         if not hasattr(self, 'content_dir') or not self.content_dir.exists():
             return False
             
+        if not self._acquire_lock():
+            return False
+
         try:
             # Create a batch script to replace files after app closes
             # It waits 2 seconds, moves files, deletes itself
@@ -76,6 +111,7 @@ class GitHubUpdater:
 timeout /t 2 /nobreak > nul
 xcopy /s /e /y "{self.content_dir.absolute()}\\*" .
 rd /s /q "update_temp"
+del "{self.LOCK_FILE}"
 start python money_mods.py
 del "%~f0"
 """
@@ -87,4 +123,5 @@ del "%~f0"
             return True
         except Exception as e:
             print(f"Failed to prepare update application: {e}")
+            self._release_lock()
             return False

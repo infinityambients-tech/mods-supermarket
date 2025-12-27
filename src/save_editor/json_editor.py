@@ -7,6 +7,18 @@ class SaveEditor:
     def __init__(self):
         self.backup_system = BackupSystem()
     
+    def is_valid_save(self, save_path):
+        """Checks if a file is a valid Supermarket Simulator save."""
+        try:
+            with open(save_path, 'r', encoding='utf-8', errors='ignore') as f:
+                # Basic check for JSON and key structure
+                content = f.read(2048)
+                if '"Progression"' in content and '"value"' in content:
+                    return True
+            return False
+        except:
+            return False
+    
     def modify_money(self, save_path, amount, operation='add'):
         """Modifies money in the save file."""
         return self._modify_field_generic(save_path, ['money', 'cash', 'balance', 'wallet', 'currentmoney'], amount, operation)
@@ -86,9 +98,96 @@ class SaveEditor:
         """Fixes interaction/movement bugs by resetting specific stats to 1.0."""
         return self._modify_field_generic(save_path, ['movementspeed', 'speed', 'reachdistance', 'reach'], 1.0, 'set')
 
+    def get_placed_objects(self, save_path):
+        """Returns a list of placed furniture/displays with their transforms."""
+        try:
+            with open(save_path, 'r', encoding='utf-8') as f:
+                save_data = json.load(f)
+            
+            # Navigate to Progression -> value -> DisplayDatas
+            prog = save_data.get('Progression', {}).get('value', {})
+            displays = prog.get('DisplayDatas', [])
+            
+            # Also check for FurnituresInCarts if needed, but primary is DisplayDatas
+            return displays
+        except Exception as e:
+            print(f"Error reading objects: {e}")
+            return []
+
+    def update_object_transform(self, save_path, obj_index, pos_dict=None, rot_dict=None):
+        """Updates the position/rotation of a specific object by index."""
+        try:
+            self.backup_system.create_backup(save_path)
+            with open(save_path, 'r', encoding='utf-8') as f:
+                save_data = json.load(f)
+            
+            prog = save_data.get('Progression', {}).get('value', {})
+            displays = prog.get('DisplayDatas', [])
+            
+            if 0 <= obj_index < len(displays):
+                obj = displays[obj_index]
+                if pos_dict:
+                    # ES3 wrap path: obj -> Transform -> Position -> value
+                    if 'Transform' in obj and 'Position' in obj['Transform']:
+                        p = obj['Transform']['Position']
+                        if 'value' in p:
+                            p['value'].update(pos_dict)
+                        else:
+                            p.update(pos_dict)
+                
+                if rot_dict:
+                    if 'Transform' in obj and 'Rotation' in obj['Transform']:
+                        r = obj['Transform']['Rotation']
+                        if 'value' in r:
+                            r['value'].update(rot_dict)
+                        else:
+                            r.update(rot_dict)
+                
+                self._save_es3_format(save_path, save_data)
+                return True
+            return False
+        except Exception as e:
+            print(f"Error updating object: {e}")
+            return False
+
     def modify_rating(self, save_path, rating):
         """Modifies store rating/satisfaction."""
         return self._modify_field_generic(save_path, ['storerating', 'reputation', 'satisfaction', 'satisfactionpoints'], rating, 'set')
+
+    def modify_cleaning_stats(self, save_path, value=0):
+        """Sets all cleaning-related counts to a specific value."""
+        keys = ['cleanedgarbagecount', 'cleaneddirtcount', 'cleanedglasscount', 'paintedwallcount', 'paintedfloorcount']
+        return self._modify_multiple_fields_generic(save_path, keys, value, 'set')
+
+    def modify_order_stats(self, save_path, completed=None, failed=None):
+        """Modifies online order statistics."""
+        modified = False
+        if completed is not None:
+            if self._modify_field_generic(save_path, ['completedordercount'], completed, 'set'):
+                modified = True
+        if failed is not None:
+            if self._modify_field_generic(save_path, ['failedordercount'], failed, 'set'):
+                modified = True
+        return modified
+
+    def _modify_multiple_fields_generic(self, save_path, keys, value, operation):
+        try:
+            self.backup_system.create_backup(save_path)
+            with open(save_path, 'r', encoding='utf-8') as f:
+                save_data = json.load(f)
+            
+            total_modified = 0
+            for key in keys:
+                if self._find_and_modify_field(save_data, [key], value, operation):
+                    total_modified += 1
+            
+            if total_modified > 0:
+                self._save_es3_format(save_path, save_data)
+                return True
+            return False
+        except Exception as e:
+            print(f"Error modifying multiple fields: {e}")
+            return False
 
     def boost_staff_stats(self, save_path, multiplier=10):
         """Boosts speed and accuracy for all hired employees."""
@@ -185,7 +284,7 @@ class SaveEditor:
         return False
     
     def get_current_stats(self, save_path):
-        """Reads current money, level, and XP from save file."""
+        """Reads all supported stats from save file."""
         try:
             with open(save_path, 'r', encoding='utf-8') as f:
                 save_data = json.load(f)
@@ -194,10 +293,13 @@ class SaveEditor:
                 'level': self._find_field_value(save_data, ['storelevel', 'level']),
                 'xp': self._find_field_value(save_data, ['storeexperiencepoints', 'experience', 'xp']),
                 'points': self._find_field_value(save_data, ['storeexpansionpoints', 'upgradepoints', 'points']),
-                'rating': self._find_field_value(save_data, ['storerating', 'reputation', 'satisfaction', 'satisfactionpoints'])
+                'rating': self._find_field_value(save_data, ['storerating', 'reputation', 'satisfaction', 'satisfactionpoints']),
+                'cleaning': self._find_field_value(save_data, ['cleanedgarbagecount']),
+                'orders_done': self._find_field_value(save_data, ['completedordercount']),
+                'orders_failed': self._find_field_value(save_data, ['failedordercount'])
             }
         except Exception:
-            return {'money': 0, 'level': 0, 'xp': 0, 'points': 0, 'rating': 0}
+            return {'money': 0, 'level': 0, 'xp': 0, 'points': 0, 'rating': 0, 'cleaning': 0, 'orders_done': 0, 'orders_failed': 0}
             
     def _find_field_value(self, data, field_patterns):
         """Recursively retrieve field value, handles ES3 'value' wrapper."""

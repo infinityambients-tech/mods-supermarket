@@ -238,6 +238,10 @@ class SupermarketSaveScanner:
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
             
+            # Validation check
+            if '"Progression"' not in content:
+                return {'format': 'json_invalid'}
+
             result = {
                 'format': 'json',
                 'raw_preview': content[:500],
