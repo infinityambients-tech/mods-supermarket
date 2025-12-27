@@ -203,8 +203,14 @@ class MoneyBoosterGUI:
         self.repair_btn = ttk.Button(util_row, text=self.language.get("repair_interaction_btn"), command=self.repair_interaction)
         self.repair_btn.pack(side="left", fill="x", expand=True, padx=2)
         
+        self.reset_licenses_btn = ttk.Button(util_row, text=self.language.get("reset_licenses_btn"), command=self.reset_licenses)
+        self.reset_licenses_btn.pack(side="left", fill="x", expand=True, padx=2)
+        
         self.backup_btn = ttk.Button(main_frame, text=self.language.get("backup_button"), command=self.create_backup)
-        self.backup_btn.pack(pady=10)
+        self.backup_btn.pack(pady=5)
+        
+        self.restore_btn = ttk.Button(main_frame, text=self.language.get("restore_button"), command=self.restore_backup)
+        self.restore_btn.pack(pady=5)
 
     def create_menu(self):
         menubar = tk.Menu(self.root)
@@ -317,11 +323,21 @@ class MoneyBoosterGUI:
         if not self.current_save_path:
             messagebox.showerror(self.language.get("error_title"), "No save file selected.")
             return
+        # Even if keys not found, this will rewrite file with correct ES3 formatting
         if self.save_editor.repair_interaction(self.current_save_path):
             messagebox.showinfo(self.language.get("success_title"), self.language.get("success_repair"))
             self.update_info()
         else:
             messagebox.showerror(self.language.get("error_title"), "Failed to repair interaction.")
+
+    def reset_licenses(self):
+        if not self.current_save_path:
+            messagebox.showerror(self.language.get("error_title"), "No save file selected.")
+            return
+        if messagebox.askyesno("Confirm", "Reset all licenses to basic? This fixes some interaction bugs."):
+            if self.save_editor.reset_licenses(self.current_save_path):
+                messagebox.showinfo(self.language.get("success_title"), "Licenses reset!")
+                self.update_info()
 
     def unlock_licenses(self):
         if not self.current_save_path:
@@ -347,7 +363,23 @@ class MoneyBoosterGUI:
         if self.current_save_path:
             path = self.backup_system.create_backup(self.current_save_path)
             if path:
-                messagebox.showinfo("Backup", f"Backup created at: {path.name}")
+                messagebox.showinfo(self.language.get("success_title"), f"Backup created: {path.name}")
+
+    def restore_backup(self):
+        if not self.current_save_path:
+            messagebox.showerror(self.language.get("error_title"), "No save file selected.")
+            return
+        
+        backups = self.backup_system.list_backups(self.current_save_path)
+        if not backups:
+            messagebox.showinfo("Wait", "No backups found for this slot.")
+            return
+        
+        latest = backups[0]
+        if messagebox.askyesno("Restore", f"Restore latest backup from {latest['date']}?"):
+            if self.backup_system.restore_backup(latest['path'], self.current_save_path):
+                messagebox.showinfo(self.language.get("success_title"), "Backup restored!")
+                self.update_info()
 
     def manual_select_save(self):
         filename = filedialog.askopenfilename(filetypes=[("JSON files", "*.json"), ("All files", "*.*")])
@@ -377,8 +409,10 @@ class MoneyBoosterGUI:
         self.set_rating_btn.config(text=self.language.get("set_rating_button"))
         self.boost_staff_btn.config(text=self.language.get("boost_staff_button"))
         self.repair_btn.config(text=self.language.get("repair_interaction_btn"))
+        self.reset_licenses_btn.config(text=self.language.get("reset_licenses_btn"))
         self.unlock_btn.config(text=self.language.get("unlock_licenses_button"))
         self.backup_btn.config(text=self.language.get("backup_button"))
+        self.restore_btn.config(text=self.language.get("restore_button"))
         self.create_menu()
 
     def check_for_updates(self):
