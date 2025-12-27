@@ -200,6 +200,9 @@ class MoneyBoosterGUI:
         self.boost_staff_btn = ttk.Button(util_row, text=self.language.get("boost_staff_button"), command=self.boost_staff)
         self.boost_staff_btn.pack(side="left", fill="x", expand=True, padx=2)
         
+        self.repair_btn = ttk.Button(util_row, text=self.language.get("repair_interaction_btn"), command=self.repair_interaction)
+        self.repair_btn.pack(side="left", fill="x", expand=True, padx=2)
+        
         self.backup_btn = ttk.Button(main_frame, text=self.language.get("backup_button"), command=self.create_backup)
         self.backup_btn.pack(pady=10)
 
@@ -310,6 +313,16 @@ class MoneyBoosterGUI:
         else:
             messagebox.showerror(self.language.get("error_title"), "Failed to boost staff stats. Make sure you have hired employees!")
 
+    def repair_interaction(self):
+        if not self.current_save_path:
+            messagebox.showerror(self.language.get("error_title"), "No save file selected.")
+            return
+        if self.save_editor.repair_interaction(self.current_save_path):
+            messagebox.showinfo(self.language.get("success_title"), self.language.get("success_repair"))
+            self.update_info()
+        else:
+            messagebox.showerror(self.language.get("error_title"), "Failed to repair interaction.")
+
     def unlock_licenses(self):
         if not self.current_save_path:
             messagebox.showerror(self.language.get("error_title"), "No save file selected.")
@@ -363,6 +376,7 @@ class MoneyBoosterGUI:
         self.set_points_btn.config(text=self.language.get("set_points_button"))
         self.set_rating_btn.config(text=self.language.get("set_rating_button"))
         self.boost_staff_btn.config(text=self.language.get("boost_staff_button"))
+        self.repair_btn.config(text=self.language.get("repair_interaction_btn"))
         self.unlock_btn.config(text=self.language.get("unlock_licenses_button"))
         self.backup_btn.config(text=self.language.get("backup_button"))
         self.create_menu()

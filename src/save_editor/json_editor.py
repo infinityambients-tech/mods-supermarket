@@ -24,19 +24,20 @@ class SaveEditor:
         return self._modify_field_generic(save_path, ['storeexpansionpoints', 'upgradepoints', 'points'], points, 'set')
 
     def unlock_all_licenses(self, save_path):
-        """Unlocks all product licenses."""
+        """Unlocks all product licenses and ensures they show up."""
         try:
-            # Create backup
             self.backup_system.create_backup(save_path)
-            
             with open(save_path, 'r', encoding='utf-8') as f:
                 save_data = json.load(f)
             
-            # This is a bit more complex as it's usually a list
-            # We'll search for the list and fill it with IDs 1-100 (enough for current game)
-            modified = self._find_and_unlock_licenses(save_data)
+            # IDs 21-125 are the standard product licenses (IDs below 21 are dangerous/reserved)
+            safe_license_ids = list(range(21, 126))
             
-            if modified:
+            # Update multiple potential license keys to ensure visibility in market/restocking
+            l1 = self._update_list_field(save_data, ['unlockedlicenses', 'licenses'], safe_license_ids)
+            l2 = self._update_list_field(save_data, ['m_unlockedproductlicenses', 'unlockedproductlicenses'], safe_license_ids)
+            
+            if l1 or l2:
                 with open(save_path, 'w', encoding='utf-8') as f:
                     json.dump(save_data, f, indent=2)
                 return True
@@ -44,6 +45,29 @@ class SaveEditor:
         except Exception as e:
             print(f"Error unlocking licenses: {e}")
             return False
+
+    def _update_list_field(self, data, patterns, new_list):
+        """Recursively find lists and update them by merging sets."""
+        modified = False
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key.lower() in patterns and isinstance(value, list):
+                    # Ensure we only have integers and merge with new IDs
+                    current_ids = [int(i) for i in value if str(i).isdigit()]
+                    data[key] = sorted(list(set(current_ids + new_list)))
+                    modified = True
+                elif isinstance(value, (dict, list)):
+                    if self._update_list_field(value, patterns, new_list):
+                        modified = True
+        elif isinstance(data, list):
+            for item in data:
+                if self._update_list_field(item, patterns, new_list):
+                    modified = True
+        return modified
+
+    def repair_interaction(self, save_path):
+        """Fixes interaction/movement bugs by resetting specific stats to 1.0."""
+        return self._modify_field_generic(save_path, ['movementspeed', 'speed', 'reachdistance', 'reach'], 1.0, 'set')
 
     def modify_rating(self, save_path, rating):
         """Modifies store rating/satisfaction."""
@@ -68,52 +92,28 @@ class SaveEditor:
             return False
 
     def _find_and_boost_staff(self, data, mult):
-        """Recursively find employee lists and boost stats."""
+        """Recursively find employee lists and boost stats safely."""
         modified = False
         if isinstance(data, dict):
-            # Check for keys related to employees
-            if any(k.lower() in ['purchasedemployees', 'hiredemployees', 'cashiers', 'restockers'] for k in data.keys()):
-                for key, value in data.items():
-                    if key.lower() in ['purchasedemployees', 'hiredemployees', 'cashiers', 'restockers'] and isinstance(value, list):
-                        for emp in value:
-                            if isinstance(emp, dict):
-                                # Boost speed and accuracy
-                                for stat in ['speed', 'movementspeed', 'accuracy', 'workspeed']:
-                                    for k in emp.keys():
-                                        if k.lower() == stat:
-                                            emp[k] = 10.0 # High fixed value or boost
-                                            modified = True
-            
-            # Continue search
-            for value in data.values():
-                if isinstance(value, (dict, list)):
+            for key, value in data.items():
+                # Strictly target identifying keys for employee lists
+                if key.lower() in ['purchasedemployees', 'hiredemployees', 'cashiers', 'restockers'] and isinstance(value, list):
+                    for emp in value:
+                        if isinstance(emp, dict):
+                            # Boost only internal employee fields
+                            for s_key in list(emp.keys()):
+                                if s_key.lower() in ['speed', 'movementspeed', 'accuracy', 'workspeed']:
+                                    emp[s_key] = 10.0
+                                    modified = True
+                elif isinstance(value, (dict, list)):
                     if self._find_and_boost_staff(value, mult):
                         modified = True
-                        
         elif isinstance(data, list):
             for item in data:
                 if self._find_and_boost_staff(item, mult):
                     modified = True
         return modified
 
-    def _find_and_unlock_licenses(self, data):
-        """Recursively find unlockedLicenses list and populate it."""
-        if isinstance(data, dict):
-            for key, value in data.items():
-                if key.lower() in ['unlockedlicenses', 'licenses']:
-                    if isinstance(value, list):
-                        # Add IDs 0 to 120 (approx max licenses)
-                        data[key] = list(range(120))
-                        return True
-                
-                if isinstance(value, (dict, list)):
-                    if self._find_and_unlock_licenses(value):
-                        return True
-        elif isinstance(data, list):
-            for item in data:
-                if self._find_and_unlock_licenses(item):
-                    return True
-        return False
 
     def _modify_field_generic(self, save_path, field_patterns, value, operation):
         try:
