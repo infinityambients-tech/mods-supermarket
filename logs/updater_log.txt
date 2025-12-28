@@ -208,3 +208,8 @@ C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_
 [niedz. 28.12.2025 13:23:34,83] File replacement successful. 
 [niedz. 28.12.2025 13:23:34,85] Cleaning up... 
 [niedz. 28.12.2025 13:23:34,90] Restarting application... 
+[2025-12-28 13:29:25] Updater initialized. Local version: 2.12.7.5E
+[2025-12-28 13:30:10] Updater initialized. Local version: 2.12.7.5E
+[2025-12-28 13:32:09] Updater initialized. Local version: 2.13.1.2.E
+[2025-12-28 13:34:58] Updater initialized. Local version: 2.13.1.2.E
+[2025-12-28 13:37:56] Updater initialized. Local version: 2.13.1.2.E

@@ -71,7 +71,8 @@ class MoneyBoosterGUI:
         style.map('TNotebook.Tab', background=[('selected', theme['highlight'])])
 
     def setup_ui(self):
-        self.root.title(self.language.get("app_title"))
+        title = f"{self.language.get('app_title')} v{self.local_version}"
+        self.root.title(title)
         
         # Notebook for Tabs
         self.notebook = ttk.Notebook(self.root)
