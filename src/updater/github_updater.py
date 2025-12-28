@@ -83,9 +83,14 @@ class GitHubUpdater:
             return {'available': False}
 
     def is_newer(self, remote_version):
+        import re
         try:
-            v1_parts = [int(p) for p in self.current_version.split('.')]
-            v2_parts = [int(p) for p in remote_version.split('.')]
+            def parse_version(v):
+                # Extract all number sequences from the string
+                return [int(x) for x in re.findall(r'\d+', v)]
+            
+            v1_parts = parse_version(self.current_version)
+            v2_parts = parse_version(remote_version)
             return v2_parts > v1_parts
         except:
             return False

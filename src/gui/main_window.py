@@ -652,8 +652,10 @@ class MoneyBoosterGUI:
             if messagebox.askyesno(self.language.get("update_available"), msg):
                 self.perform_update(update_info['download_url'])
         else:
-            messagebox.showinfo(self.language.get("no_update_title", "Up to Date"), 
-                                self.language.get("no_update_msg", f"You are using the latest version: {self.local_version}"))
+            msg_format = self.language.get("no_update_msg", "You are using the latest version: {}")
+            # Ensure we format the string if it contains placeholders
+            formatted_msg = msg_format.format(self.local_version) if "{}" in msg_format else msg_format
+            messagebox.showinfo(self.language.get("no_update_title", "Up to Date"), formatted_msg)
 
     def perform_update(self, download_url):
         """Handles the download and application of the update."""

@@ -57,5 +57,9 @@
     "updating": "Aktualizowanie...",
     "update_ready": "Aktualizacja gotowa! Aplikacja zostanie zrestartowana, aby wprowadzić zmiany.",
     "restock_button": "Uzupełnij towar",
-    "success_restock": "Wszystkie półki i magazyn zostały uzupełnione!"
+    "success_restock": "Wszystkie półki i magazyn zostały uzupełnione!",
+    "menu_help": "Pomoc",
+    "menu_check_updates": "Sprawdź aktualizacje",
+    "no_update_title": "Aktualna wersja",
+    "no_update_msg": "Używasz najnowszej wersji: {}"
 }
