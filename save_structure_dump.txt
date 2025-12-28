@@ -1,15 +1,63 @@
 --- SCAN START ---
-/Progression: dict
-/Progression/value/DailyStatisticsData/ExpensiveProducts: int
-/Progression/value/DailyStatisticsData/StorePoint: int
-/Progression/value/CurrentStorePoint: int
-/Progression/value/CurrentStoreLevel: int
+Progression/value/UnlockedLicenses : list
+Progression/value/LoanDatas : list
+Progression/value/Money : int
+Progression/value/CartData : dict
+Progression/value/BoxDatas : list
+Progression/value/VehicleDatas : list
+Progression/value/FurnitureBoxDatas : list
+Progression/value/BucketBoxDatas : list
+Progression/value/DisplayDatas : list
+Progression/value/RackDatas : list
+Progression/value/CheckoutDatas : list
+Progression/value/ScaleData : list
+Progression/value/CategorySignDatas : list
+Progression/value/DailyStatisticsData : dict
+Progression/value/FurnitureDatas : list
+Progression/value/ComputerTransform : dict
+Progression/value/CrateProductsData : list
+Progression/value/SecurityCameraSaveDatas : list
+Progression/value/CurrentTime : int
+Progression/value/CurrentDay : int
+Progression/value/LastDayPricesChanged : int
+Progression/value/LastWholesaleOfferShown : dict
+Progression/value/MysteryBox : bool
+Progression/value/IsGarbageOnboardingCompleted : bool
+Progression/value/CleanedGarbageCount : int
+Progression/value/CleanedDirtCount : int
+Progression/value/CleanedGlassCount : int
+Progression/value/CompletedCheckoutCount : int
+Progression/value/CurrentStorePoint : int
+Progression/value/CurrentStoreLevel : int
+Progression/value/StoreUpgradeLevel : int
+Progression/value/IsStoreOpen : bool
+Progression/value/PaintedWallCount : int
+Progression/value/PaintedFloorCount : int
+Progression/value/IsTabletBought : bool
+Progression/value/IsTabletOrdered : bool
+Progression/value/IsCrateBought : bool
+Progression/value/IsCrateEnabled : bool
+Progression/value/IsBatBought : bool
+Progression/value/IsBatEnabled : bool
+Progression/value/IsNewGame : bool
+Progression/value/IsSecurityWarningShowed : bool
+Progression/value/IsTutorialShoplifterBeaten : bool
+Progression/value/IsShoplifterWarningShowed : bool
+Progression/value/IsEnableShoplifterWarningShowed : bool
+Progression/value/IsVeggiesWarningShowed : bool
+Progression/value/IsScaleBought : bool
+Progression/value/IsStallBought : bool
+Progression/value/IsAnyVeggieBought : bool
+Progression/value/IsAnyVeggiePlacedToStall : bool
+Progression/value/IsScaleTutorialCompleted : bool
+Progression/value/IsOnlineOrderTutorialCompleted : bool
+Progression/value/HasAnyProductBought : bool
+Progression/value/HasAnyProductPlaced : bool
+Progression/value/HasAnyPriceSet : bool
+Progression/value/StoreLightPosition : dict
+Progression/value/StoreLightRotationY : int
+Progression/value/StorageLightPosition : dict
+Progression/value/StorageLightRotationY : int
   VALUE: 1
-/Progression/value/StoreUpgradeLevel: int
   VALUE: 0
-/Progression/value/IsStoreOpen: bool
-/Progression/value/StoreLightPosition: dict
-/Progression/value/StoreLightRotationY: int
-/Expenses: dict
-/Storage/value/StorageLevel: int
   VALUE: 0

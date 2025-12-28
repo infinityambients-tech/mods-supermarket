@@ -9,11 +9,14 @@ def traverse(data, path=''):
         for k, v in data.items():
             current_path = f"{path}/{k}"
             # Log specific interesting keys or just all keys at top levels
-            if any(x in k.lower() for x in ['level', 'xp', 'progression', 'store']):
-                with open(output_file, 'a', encoding='utf-8') as f:
-                    f.write(f"{current_path}: {type(v).__name__}\n")
+            if any(x in k.lower() for x in ['progression']):
+                 if isinstance(v, dict) and 'value' in v:
+                     val = v['value']
+                     if isinstance(val, dict):
+                         for pk in val.keys():
+                             with open(output_file, 'a', encoding='utf-8') as f:
+                                 f.write(f"Progression/value/{pk} : {type(val[pk]).__name__}\n")
             
-            # Print values for level-like keys
             if 'level' in k.lower() and isinstance(v, (int, float, dict)):
                  with open(output_file, 'a', encoding='utf-8') as f:
                     f.write(f"  VALUE: {v}\n")

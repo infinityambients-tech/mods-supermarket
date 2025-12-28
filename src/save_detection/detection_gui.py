@@ -13,6 +13,7 @@ class SaveDetectionGUI:
         
         self.setup_ui()
         self.scanning = False
+        self.last_scan_results = None
     
     def setup_ui(self):
         detection_frame = ttk.LabelFrame(self.parent, text="Save Detection", padding="10")
@@ -60,6 +61,11 @@ class SaveDetectionGUI:
         action_frame = ttk.Frame(detection_frame)
         action_frame.pack(fill="x", pady=5)
         
+        self.filter_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(action_frame, text="Filter Unknown/Invalid", 
+                       variable=self.filter_var, 
+                       command=self.refresh_display).pack(side="right", padx=5)
+
         ttk.Button(action_frame, text="💾 Use and Modify Selected", 
                   command=self.modify_selected).pack(side="left", padx=2)
         
@@ -103,20 +109,38 @@ class SaveDetectionGUI:
         self.parent.after(0, lambda: self.status_label.config(text=text))
         self.parent.after(0, lambda: self.progress_var.set(progress))
     
+    def refresh_display(self):
+        if self.last_scan_results:
+            self._display_results(self.last_scan_results)
+
     def _display_results(self, all_saves):
+        self.last_scan_results = all_saves
         # Clear
         for item in self.save_tree.get_children():
             self.save_tree.delete(item)
         
+        filter_enabled = self.filter_var.get()
+        
+        def should_show(save):
+            if not filter_enabled: return True
+            # If known check is available, use it. defaults to True if missing to be safe?
+            # actually scanner sets it. defaults to False if not present.
+            return save.get('is_known', False)
+
         if all_saves['primary']:
-            self._add_save_to_tree(all_saves['primary'], "⭐ Primary")
+            if should_show(all_saves['primary']):
+                self._add_save_to_tree(all_saves['primary'], "⭐ Primary")
         
         for save in all_saves['slots']:
             if save != all_saves['primary']:
-                self._add_save_to_tree(save, "📁 Slot")
+                if should_show(save):
+                    self._add_save_to_tree(save, "📁 Slot")
                 
-        for backup in all_saves['backups'][:10]: # Show more backups
-            self._add_save_to_tree(backup, "💾 Backup")
+        for backup in all_saves['backups'][:20]: # Show more backups
+            # User requested hiding backups/temps. 
+            # If filtered, maybe we hide backups that are not 'known' valid saves.
+            if should_show(backup):
+                self._add_save_to_tree(backup, "💾 Backup")
             
     def _add_save_to_tree(self, save_info, status):
         money = save_info.get('money_amount')

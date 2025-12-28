@@ -14,6 +14,12 @@ class SupermarketSaveScanner:
         self.game_process_name = "Supermarket Simulator.exe"
         self.save_patterns = ["*.json", "*.dat", "*.save", "*.sav", "*.bak", "*.backup", "*.es3"]
         self.save_keywords = ["save", "data", "game", "player", "profile", "slot"]
+        self.known_patterns = {
+            'money': ['money', 'cash', 'balance', 'currency'],
+            'level': ['level', 'xp', 'experience', 'storelevel'],
+            'inventory': ['inventory', 'items', 'products', 'progression'],
+            'store': ['store', 'shop', 'market']
+        }
         
     def detect_game_installation(self) -> Dict[str, str]:
         """Detects all possible game installation locations"""
@@ -182,7 +188,8 @@ class SupermarketSaveScanner:
                 'checksum': self._calculate_checksum(file_path),
                 'file_type': self._detect_file_type(file_path),
                 'money_amount': None,
-                'is_valid': False
+                'is_valid': False,
+                'is_known': self.classify_save_file(file_path)
             }
             
             content_info = self._read_save_content(file_path)
@@ -282,3 +289,32 @@ class SupermarketSaveScanner:
     def _quick_system_scan(self) -> List[str]:
         # Implementation of quick scan can go here
         return []
+
+    def classify_save_file(self, file_path: Path) -> bool:
+        """Classify save file as known/unknown based on content analysis."""
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read(5000)  # Read first 5KB
+                
+            # Check if it looks like JSON
+            if content.strip().startswith('{'):
+                try:
+                    # Attempt partial parse if meaningful keys exist in raw text
+                    # Or just rely on string matching to avoid JSON errors on partial read
+                    known_fields = 0
+                    lower_content = content.lower()
+                    
+                    for field_group in self.known_patterns.values():
+                        for field in field_group:
+                            # Simple string search first for performance
+                            if f'"{field}"' in lower_content or f"'{field}'" in lower_content:
+                                known_fields += 1
+                                break
+                    
+                    # If found at least 2 groups of fields
+                    return known_fields >= 2
+                except:
+                    pass
+            return False
+        except:
+            return False
