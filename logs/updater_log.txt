@@ -74,3 +74,89 @@ C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_
 [2025-12-28 13:14:51] Updater initialized. Local version: 2.0.0
 [2025-12-28 13:14:53] Starting update check from https://api.github.com/repos/infinityambients-tech/mods-supermarket...
 [2025-12-28 13:14:54] Starting update check from https://api.github.com/repos/infinityambients-tech/mods-supermarket...
+[2025-12-28 13:18:59] Updater initialized. Local version: 2.0.0
+[2025-12-28 13:19:01] Starting update check from https://api.github.com/repos/infinityambients-tech/mods-supermarket...
+[2025-12-28 13:19:04] Download successful. Extracted to update_temp\infinityambients-tech-mods-supermarket-8a96a43
+[2025-12-28 13:19:06] Preparing update script. Waiting for PID 7300
+[2025-12-28 13:19:06] Update script created. Launching...
+[niedz. 28.12.2025 13:19:07,50] --- BATCH UPDATE STARTED --- 
+[niedz. 28.12.2025 13:19:07,50] Waiting for process 7300 to exit... 
+[niedz. 28.12.2025 13:19:07,74] Process 7300 exited. Proceeding with file replacement. 
+[niedz. 28.12.2025 13:19:07,75] Copying files from C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43... 
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\.gitignore
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\debug_save_keys.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\dump_furniture.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\inspect_object_data.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\keys_dump.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\LICENSE
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\main.spec
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\money_mods.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\README.md
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\read_dump.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\requirements.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\research_stats.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\save_structure_dump.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\search_furniture.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\SupermarketMoneyBooster.spec
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\version.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\locales\en.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\locales\pl.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\logs\updater_log.txt
+Sharing violation
+[niedz. 28.12.2025 13:19:08,16] ERROR: xcopy failed with code 4 
+[niedz. 28.12.2025 13:19:08,17] Cleaning up... 
+[niedz. 28.12.2025 13:19:08,22] Restarting application... 
+[niedz. 28.12.2025 13:19:28,05] --- BATCH UPDATE STARTED --- 
+[niedz. 28.12.2025 13:19:28,05] Waiting for process 32456 to exit... 
+[niedz. 28.12.2025 13:19:28,25] Process 32456 exited. Proceeding with file replacement. 
+[niedz. 28.12.2025 13:19:28,25] Copying files from C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43... 
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\.gitignore
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\debug_save_keys.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\dump_furniture.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\inspect_object_data.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\keys_dump.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\LICENSE
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\main.spec
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\money_mods.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\README.md
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\read_dump.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\requirements.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\research_stats.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\save_structure_dump.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\search_furniture.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\SupermarketMoneyBooster.spec
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\version.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\locales\en.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\locales\pl.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\logs\updater_log.txt
+Sharing violation
+[niedz. 28.12.2025 13:19:28,65] ERROR: xcopy failed with code 4 
+[niedz. 28.12.2025 13:19:28,66] Cleaning up... 
+[niedz. 28.12.2025 13:19:28,70] Restarting application... 
+[niedz. 28.12.2025 13:19:42,64] --- BATCH UPDATE STARTED --- 
+[niedz. 28.12.2025 13:19:42,64] Waiting for process 33772 to exit... 
+[niedz. 28.12.2025 13:19:42,84] Process 33772 exited. Proceeding with file replacement. 
+[niedz. 28.12.2025 13:19:42,84] Copying files from C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43... 
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\.gitignore
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\debug_save_keys.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\dump_furniture.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\inspect_object_data.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\keys_dump.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\LICENSE
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\main.spec
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\money_mods.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\README.md
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\read_dump.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\requirements.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\research_stats.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\save_structure_dump.txt
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\search_furniture.py
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\SupermarketMoneyBooster.spec
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\version.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\locales\en.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\locales\pl.json
+C:\Users\igorz\OneDrive\1251019185526-Desktop\Desktop\MODS TO SUPERMARKET\Money_mods\update_temp\infinityambients-tech-mods-supermarket-8a96a43\logs\updater_log.txt
+Sharing violation
+[niedz. 28.12.2025 13:19:43,24] ERROR: xcopy failed with code 4 
+[niedz. 28.12.2025 13:19:43,27] Cleaning up... 
+[niedz. 28.12.2025 13:19:43,34] Restarting application... 

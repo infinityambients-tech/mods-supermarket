@@ -136,6 +136,16 @@ class GitHubUpdater:
         try:
             pid = os.getpid()
             self._log(f"Preparing update script. Waiting for PID {pid}")
+
+            # SAFETY: Remove updater_log.txt from source (update package) to prevent
+            # "Sharing violation" when xcopy tries to overwrite the log file we are currently writing to.
+            potential_log_in_update = self.content_dir / "logs" / "updater_log.txt"
+            if potential_log_in_update.exists():
+                try:
+                    os.remove(potential_log_in_update)
+                    self._log("Removed conflicting updater_log.txt from update package.")
+                except Exception as e:
+                    self._log(f"Warning: Could not remove log from update package: {e}")
             
             # Use absolute path for logs in batch script to avoid CWD issues
             log_abs_path = self.LOG_FILE

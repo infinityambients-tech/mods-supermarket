@@ -57,9 +57,5 @@
     "updating": "Updating...",
     "update_ready": "Update ready! The application will now restart to apply changes.",
     "restock_button": "Restock Everything",
-    "success_restock": "All shelves and storage have been restocked!",
-    "menu_help": "Help",
-    "menu_check_updates": "Check for Updates",
-    "no_update_title": "Up to Date",
-    "no_update_msg": "You are using the latest version: {}"
+    "success_restock": "All shelves and storage have been restocked!"
 }
