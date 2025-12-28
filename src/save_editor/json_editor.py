@@ -99,33 +99,40 @@ class SaveEditor:
         return self._modify_field_generic(save_path, ['movementspeed', 'speed', 'reachdistance', 'reach'], 1.0, 'set')
 
     def get_placed_objects(self, save_path):
-        """Returns a list of placed furniture/displays with their transforms."""
+        """Returns a dict of placed object lists (displays, checkouts, racks, furniture)."""
         try:
             with open(save_path, 'r', encoding='utf-8') as f:
                 save_data = json.load(f)
             
-            # Navigate to Progression -> value -> DisplayDatas
             prog = save_data.get('Progression', {}).get('value', {})
-            displays = prog.get('DisplayDatas', [])
-            
-            # Also check for FurnituresInCarts if needed, but primary is DisplayDatas
-            return displays
+            return {
+                'DisplayDatas': prog.get('DisplayDatas', []),
+                'CheckoutDatas': prog.get('CheckoutDatas', []),
+                'RackDatas': prog.get('RackDatas', []),
+                'FurnitureDatas': prog.get('FurnitureDatas', [])
+            }
         except Exception as e:
             print(f"Error reading objects: {e}")
-            return []
+            return {}
 
-    def update_object_transform(self, save_path, obj_index, pos_dict=None, rot_dict=None):
-        """Updates the position/rotation of a specific object by index."""
+    def update_object_transform(self, save_path, category, obj_index, pos_dict=None, rot_dict=None):
+        """Updates the position/rotation of a specific object by category and index."""
         try:
             self.backup_system.create_backup(save_path)
             with open(save_path, 'r', encoding='utf-8') as f:
                 save_data = json.load(f)
             
             prog = save_data.get('Progression', {}).get('value', {})
-            displays = prog.get('DisplayDatas', [])
             
-            if 0 <= obj_index < len(displays):
-                obj = displays[obj_index]
+            # Select the correct list based on category
+            obj_list = prog.get(category)
+            
+            if obj_list is None:
+                print(f"Category {category} not found.")
+                return False
+                
+            if 0 <= obj_index < len(obj_list):
+                obj = obj_list[obj_index]
                 if pos_dict:
                     # ES3 wrap path: obj -> Transform -> Position -> value
                     if 'Transform' in obj and 'Position' in obj['Transform']:

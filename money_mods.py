@@ -12,12 +12,12 @@ IMPLEMENTED FEATURES:
 - [x] Staff Stat Booster (Max Speed & Accuracy)
 - [x] Advanced Save Detection System
 - [x] Automatic Backup System
+- [X] Staff Stat Booster (Speed & Accuracy)
+- [X] Infinite Customer Satisfaction
+- [X] instant Restocking System
+- [X] Dynamic Pricing Automator
 
 FUTURE SUGGESTIONS & PLANNED:
-- [ ] Staff Stat Booster (Speed & Accuracy)
-- [ ] Infinite Customer Satisfaction
-- [ ] instant Restocking System
-- [ ] Dynamic Pricing Automator
 
 "Nzawa" Suggestions Memory:
 - Remember to check AppData/LocalLow/NoktaGames for save files.

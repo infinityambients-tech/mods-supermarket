@@ -262,6 +262,16 @@ class MoneyBoosterGUI:
         main_frame = ttk.Frame(parent, padding="10")
         main_frame.pack(fill="both", expand=True)
 
+        # Filters
+        filter_frame = ttk.Frame(main_frame)
+        filter_frame.pack(fill="x", pady=5)
+        
+        ttk.Label(filter_frame, text="Category:").pack(side="left")
+        self.obj_category = ttk.Combobox(filter_frame, values=["DisplayDatas", "CheckoutDatas", "RackDatas", "FurnitureDatas"], state="readonly")
+        self.obj_category.set("DisplayDatas")
+        self.obj_category.pack(side="left", padx=5)
+        self.obj_category.bind("<<ComboboxSelected>>", lambda e: self.refresh_objects())
+
         # Object List
         list_frame = ttk.Frame(main_frame)
         list_frame.pack(fill="both", expand=True)
@@ -372,22 +382,41 @@ class MoneyBoosterGUI:
     def refresh_objects(self):
         if not self.current_save_path: return
         for it in self.obj_list.get_children(): self.obj_list.delete(it)
-        objects = self.save_editor.get_placed_objects(self.current_save_path)
+        
+        category = self.obj_category.get()
+        all_objects = self.save_editor.get_placed_objects(self.current_save_path)
+        objects = all_objects.get(category, [])
+        
         for i, obj in enumerate(objects):
-            otype = obj.get('FurnitureType', 'Unknown')
-            t = obj.get('Transform', {}).get('Position', {}).get('value', {})
+            # Try different ID keys based on type
+            otype = obj.get('FurnitureID', obj.get('CheckoutID', obj.get('RackID', 'Unknown')))
+            
+            # Position safely
+            t = obj.get('Transform', {}).get('Position', {})
+            # Handle ES3 value wrapper
+            if 'value' in t: t = t['value']
+            
             pos_str = f"{t.get('x',0):.1f}, {t.get('y',0):.1f}, {t.get('z',0):.1f}"
-            self.obj_list.insert("", "end", values=(i, otype, pos_str))
+            self.obj_list.insert("", "end", values=(i, f"ID: {otype}", pos_str))
 
     def on_object_select(self, event):
         selected = self.obj_list.selection()
         if not selected: return
         idx = int(self.obj_list.item(selected[0])['values'][0])
-        objects = self.save_editor.get_placed_objects(self.current_save_path)
+        category = self.obj_category.get()
+        
+        all_objects = self.save_editor.get_placed_objects(self.current_save_path)
+        objects = all_objects.get(category, [])
+        
         if 0 <= idx < len(objects):
             obj = objects[idx]
-            pos = obj.get('Transform', {}).get('Position', {}).get('value', {})
-            rot = obj.get('Transform', {}).get('Rotation', {}).get('value', {})
+            
+            t = obj.get('Transform', {})
+            pos = t.get('Position', {})
+            rot = t.get('Rotation', {})
+            
+            if 'value' in pos: pos = pos['value']
+            if 'value' in rot: rot = rot['value']
             
             self.obj_x.delete(0, tk.END); self.obj_x.insert(0, str(pos.get('x', 0)))
             self.obj_y.delete(0, tk.END); self.obj_y.insert(0, str(pos.get('y', 0)))
@@ -397,15 +426,21 @@ class MoneyBoosterGUI:
     def save_object_transform(self):
         selected = self.obj_list.selection()
         if not selected or not self.current_save_path: return
+        
         idx = int(self.obj_list.item(selected[0])['values'][0])
+        category = self.obj_category.get()
+        
         try:
             pos = {'x': float(self.obj_x.get()), 'y': float(self.obj_y.get()), 'z': float(self.obj_z.get())}
             rot = {'y': float(self.obj_rot_y.get())}
-            if self.save_editor.update_object_transform(self.current_save_path, idx, pos, rot):
+            
+            if self.save_editor.update_object_transform(self.current_save_path, category, idx, pos, rot):
                 messagebox.showinfo("Success", "Object transform updated!")
                 self.refresh_objects()
-        except:
-            messagebox.showerror("Error", "Enter valid coordinates!")
+                # Reselect
+                # self.obj_list.selection_set(selected)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save: {e}")
 
     def add_money(self):
         if not self.current_save_path:
