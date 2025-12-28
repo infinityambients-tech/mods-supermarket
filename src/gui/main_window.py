@@ -327,6 +327,10 @@ class MoneyBoosterGUI:
         file_menu.add_separator()
         file_menu.add_command(label=self.language.get("menu_exit"), command=self.root.quit)
 
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label=self.language.get("menu_help", "Help"), menu=help_menu)
+        help_menu.add_command(label=self.language.get("menu_check_updates", "Check for Updates"), command=self.manual_update_check)
+
     def load_initial_data(self):
         found_file = self.save_manager.find_save_file()
         if found_file:
@@ -630,13 +634,26 @@ class MoneyBoosterGUI:
         self.create_menu()
 
     def check_for_updates(self):
-        """Checks for new version on GitHub."""
+        """Checks for new version on GitHub (Auto-check)."""
+        # Only show prompt if update is found
         update_info = self.updater.check_for_updates()
         if update_info.get('available'):
             latest_v = update_info['version']
             msg = self.language.get("update_desc").format(latest_v)
             if messagebox.askyesno(self.language.get("update_available"), msg):
                 self.perform_update(update_info['download_url'])
+
+    def manual_update_check(self):
+        """Checks for new version on GitHub (Manual check)."""
+        update_info = self.updater.check_for_updates()
+        if update_info.get('available'):
+            latest_v = update_info['version']
+            msg = self.language.get("update_desc").format(latest_v)
+            if messagebox.askyesno(self.language.get("update_available"), msg):
+                self.perform_update(update_info['download_url'])
+        else:
+            messagebox.showinfo(self.language.get("no_update_title", "Up to Date"), 
+                                self.language.get("no_update_msg", f"You are using the latest version: {self.local_version}"))
 
     def perform_update(self, download_url):
         """Handles the download and application of the update."""

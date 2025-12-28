@@ -57,6 +57,8 @@ class GitHubUpdater:
     
     def check_for_updates(self):
         try:
+            self._log(f"Starting update check from {self.repo_url}...")
+            print(f"DEBUG: Checking updates from {self.repo_url}")
             response = requests.get(f"{self.repo_url}/releases/latest", timeout=5)
             if response.status_code == 200:
                 latest_release = response.json()
