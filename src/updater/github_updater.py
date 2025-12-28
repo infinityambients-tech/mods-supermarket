@@ -130,11 +130,14 @@ class GitHubUpdater:
             pid = os.getpid()
             self._log(f"Preparing update script. Waiting for PID {pid}")
             
+            # Use absolute path for logs in batch script to avoid CWD issues
+            log_abs_path = os.path.abspath(self.LOG_FILE)
+            
             # Create a batch script to replace files after app closes
             # It waits for the parent process to exit, moves files, deletes itself
             batch_content = f"""@echo off
 setlocal
-set LOG_FILE={self.LOG_FILE}
+set LOG_FILE={log_abs_path}
 echo [%DATE% %TIME%] --- BATCH UPDATE STARTED --- >> "%LOG_FILE%"
 echo [%DATE% %TIME%] Waiting for process {pid} to exit... >> "%LOG_FILE%"
 

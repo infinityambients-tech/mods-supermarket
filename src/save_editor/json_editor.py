@@ -25,7 +25,7 @@ class SaveEditor:
 
     def modify_level(self, save_path, level):
         """Modifies store level."""
-        return self._modify_field_generic(save_path, ['storelevel', 'level'], level, 'set')
+        return self._modify_field_generic(save_path, ['storelevel', 'level', 'currentstorelevel'], level, 'set')
 
     def modify_xp(self, save_path, xp):
         """Modifies store XP."""
@@ -33,7 +33,7 @@ class SaveEditor:
 
     def modify_store_points(self, save_path, points):
         """Modifies store upgrade/expansion points."""
-        return self._modify_field_generic(save_path, ['storeexpansionpoints', 'upgradepoints', 'points'], points, 'set')
+        return self._modify_field_generic(save_path, ['storeexpansionpoints', 'upgradepoints', 'points', 'currentstorepoint'], points, 'set')
 
     def unlock_all_licenses(self, save_path):
         """Unlocks all product licenses and ensures they show up."""
@@ -334,9 +334,9 @@ class SaveEditor:
                 save_data = json.load(f)
             return {
                 'money': self._find_field_value(save_data, ['money', 'cash', 'balance', 'wallet', 'currentmoney']),
-                'level': self._find_field_value(save_data, ['storelevel', 'level']),
+                'level': self._find_field_value(save_data, ['storelevel', 'level', 'currentstorelevel']),
                 'xp': self._find_field_value(save_data, ['storeexperiencepoints', 'experience', 'xp']),
-                'points': self._find_field_value(save_data, ['storeexpansionpoints', 'upgradepoints', 'points']),
+                'points': self._find_field_value(save_data, ['storeexpansionpoints', 'upgradepoints', 'points', 'currentstorepoint']),
                 'rating': self._find_field_value(save_data, ['storerating', 'reputation', 'satisfaction', 'satisfactionpoints']),
                 'cleaning': self._find_field_value(save_data, ['cleanedgarbagecount']),
                 'orders_done': self._find_field_value(save_data, ['completedordercount']),

@@ -1,0 +1,15 @@
+--- SCAN START ---
+/Progression: dict
+/Progression/value/DailyStatisticsData/ExpensiveProducts: int
+/Progression/value/DailyStatisticsData/StorePoint: int
+/Progression/value/CurrentStorePoint: int
+/Progression/value/CurrentStoreLevel: int
+  VALUE: 1
+/Progression/value/StoreUpgradeLevel: int
+  VALUE: 0
+/Progression/value/IsStoreOpen: bool
+/Progression/value/StoreLightPosition: dict
+/Progression/value/StoreLightRotationY: int
+/Expenses: dict
+/Storage/value/StorageLevel: int
+  VALUE: 0
