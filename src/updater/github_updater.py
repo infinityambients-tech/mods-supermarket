@@ -133,7 +133,17 @@ class GitHubUpdater:
 
         try:
             pid = os.getpid()
-            self._log(f"Preparing update script. Waiting for PID {pid}")
+            # SAFETY: Aggressively remove the 'logs' directory from the source (update package)
+            # This is critical to prevent "Sharing violation" errors when xcopy tries to
+            # overwrite the log file that this script is currently writing to.
+            # We never want to overwrite user logs with logs from the repo anyway.
+            potential_logs_dir = self.content_dir / "logs"
+            if potential_logs_dir.exists():
+                try:
+                    shutil.rmtree(potential_logs_dir)
+                    self._log("Removed conflicting 'logs' directory from update package.")
+                except Exception as e:
+                    self._log(f"Warning: Could not remove 'logs' dir from update package: {e}")
             
             # Use absolute path for logs in batch script to avoid CWD issues
             log_abs_path = os.path.abspath(self.LOG_FILE)

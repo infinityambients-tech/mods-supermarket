@@ -43,13 +43,15 @@ class MoneyBoosterGUI:
         
         self.current_save_path = None
         
-        self.apply_theme()
-        self.setup_ui()
-        self.load_initial_data()
-        
+        self.current_save_path = None
+
         # Initialize Updater (Real repository)
         self.local_version = VersionCheck.get_local_version()
         self.updater = GitHubUpdater("infinityambients-tech", "mods-supermarket", self.local_version)
+        
+        self.apply_theme()
+        self.setup_ui()
+        self.load_initial_data()
         
         # Check for updates after UI loads
         self.root.after(2000, self.check_for_updates)
