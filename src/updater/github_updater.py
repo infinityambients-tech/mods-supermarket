@@ -6,8 +6,8 @@ import shutil
 from pathlib import Path
 
 class GitHubUpdater:
-    LOG_FILE = os.path.join("logs", "updater_log.txt")
-    LOCK_FILE = "update.lock"
+    LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "logs", "updater_log.txt")
+    LOCK_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "update.lock")
 
     def __init__(self, repo_owner, repo_name, current_version):
         self.repo_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
@@ -131,7 +131,7 @@ class GitHubUpdater:
             self._log(f"Preparing update script. Waiting for PID {pid}")
             
             # Use absolute path for logs in batch script to avoid CWD issues
-            log_abs_path = os.path.abspath(self.LOG_FILE)
+            log_abs_path = self.LOG_FILE
             
             # Create a batch script to replace files after app closes
             # It waits for the parent process to exit, moves files, deletes itself
