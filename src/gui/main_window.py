@@ -598,9 +598,15 @@ class MoneyBoosterGUI:
         self.root.update()
 
         if self.updater.download_update(download_url):
+            # Show success message BEFORE apply_update starts the batch script
+            messagebox.showinfo(self.language.get("success_title"), self.language.get("update_ready"))
+            
+            # This will create the .bat and launch it
             if self.updater.apply_update():
-                messagebox.showinfo(self.language.get("success_title"), self.language.get("update_ready"))
+                # MUST quit immediately so the .bat can replace files
                 self.root.quit()
+                import sys
+                sys.exit(0)
         else:
             messagebox.showerror(self.language.get("error_title"), "Update failed to download.")
             progress_popup.destroy()

@@ -6,12 +6,24 @@ import shutil
 from pathlib import Path
 
 class GitHubUpdater:
+    LOG_FILE = "updater_log.txt"
     LOCK_FILE = "update.lock"
 
     def __init__(self, repo_owner, repo_name, current_version):
         self.repo_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
         self.current_version = current_version
+        self._log(f"Updater initialized. Local version: {current_version}")
         self._cleanup_stale_lock()
+
+    def _log(self, message):
+        """Logs message to a file."""
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            with open(self.LOG_FILE, "a") as f:
+                f.write(f"[{timestamp}] {message}\n")
+        except:
+            pass
 
     def _cleanup_stale_lock(self):
         """Removes lock file if it's older than 5 minutes."""
@@ -58,6 +70,7 @@ class GitHubUpdater:
                     }
             return {'available': False}
         except Exception as e:
+            self._log(f"Update check failed: {e}")
             print(f"Update check failed: {e}")
             return {'available': False}
 
@@ -90,9 +103,12 @@ class GitHubUpdater:
                     self.content_dir = root_folders[0]
                 else:
                     self.content_dir = update_path
+                self._log(f"Download successful. Extracted to {self.content_dir}")
                 return True
+            self._log(f"Download failed with status: {response.status_code}")
             return False
         except Exception as e:
+            self._log(f"Update download failed: {e}")
             print(f"Update download failed: {e}")
             return False
 
@@ -105,23 +121,54 @@ class GitHubUpdater:
             return False
 
         try:
+            pid = os.getpid()
+            self._log(f"Preparing update script. Waiting for PID {pid}")
+            
             # Create a batch script to replace files after app closes
-            # It waits 2 seconds, moves files, deletes itself
+            # It waits for the parent process to exit, moves files, deletes itself
             batch_content = f"""@echo off
-timeout /t 2 /nobreak > nul
-xcopy /s /e /y "{self.content_dir.absolute()}\\*" .
-rd /s /q "update_temp"
-del "{self.LOCK_FILE}"
-start python money_mods.py
+setlocal
+set LOG_FILE={self.LOG_FILE}
+echo [%DATE% %TIME%] --- BATCH UPDATE STARTED --- >> %LOG_FILE%
+echo [%DATE% %TIME%] Waiting for process {pid} to exit... >> %LOG_FILE%
+
+:WAIT_LOOP
+tasklist /FI "PID eq {pid}" 2>NUL | find /I /N "{pid}">NUL
+if "%ERRORLEVEL%"=="0" (
+    timeout /t 1 /nobreak > nul
+    goto WAIT_LOOP
+)
+
+echo [%DATE% %TIME%] Process {pid} exited. Proceeding with file replacement. >> %LOG_FILE%
+
+echo [%DATE% %TIME%] Copying files from {self.content_dir.absolute()}... >> %LOG_FILE%
+xcopy /s /e /y "{self.content_dir.absolute()}\\*" . >> %LOG_FILE% 2>&1
+
+if %ERRORLEVEL% NEQ 0 (
+    echo [%DATE% %TIME%] ERROR: xcopy failed with code %ERRORLEVEL% >> %LOG_FILE%
+) else (
+    echo [%DATE% %TIME%] File replacement successful. >> %LOG_FILE%
+)
+
+echo [%DATE% %TIME%] Cleaning up... >> %LOG_FILE%
+rd /s /q "update_temp" >> %LOG_FILE% 2>&1
+del "{self.LOCK_FILE}" >> %LOG_FILE% 2>&1
+
+echo [%DATE% %TIME%] Restarting application... >> %LOG_FILE%
+start python money_mods.py >> %LOG_FILE% 2>&1
+
+echo [%DATE% %TIME%] Update completed. >> %LOG_FILE%
 del "%~f0"
 """
             with open("updater_helper.bat", "w") as f:
                 f.write(batch_content)
             
+            self._log("Update script created. Launching...")
             # Run the batch script and exit current app
             os.startfile("updater_helper.bat")
             return True
         except Exception as e:
+            self._log(f"Failed to prepare update application: {e}")
             print(f"Failed to prepare update application: {e}")
             self._release_lock()
             return False
