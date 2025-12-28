@@ -55,5 +55,7 @@
     "update_now": "Aktualizuj",
     "update_later": "Później",
     "updating": "Aktualizowanie...",
-    "update_ready": "Aktualizacja gotowa! Aplikacja zostanie zrestartowana, aby wprowadzić zmiany."
+    "update_ready": "Aktualizacja gotowa! Aplikacja zostanie zrestartowana, aby wprowadzić zmiany.",
+    "restock_button": "Uzupełnij towar",
+    "success_restock": "Wszystkie półki i magazyn zostały uzupełnione!"
 }

@@ -220,6 +220,9 @@ class MoneyBoosterGUI:
         self.reset_licenses_btn = ttk.Button(util_row, text=self.language.get("reset_licenses_btn"), command=self.reset_licenses)
         self.reset_licenses_btn.pack(side="left", fill="x", expand=True, padx=2)
         
+        self.restock_btn = ttk.Button(util_row, text=self.language.get("restock_button"), command=self.restock_all)
+        self.restock_btn.pack(side="left", fill="x", expand=True, padx=2)
+        
         self.backup_btn = ttk.Button(main_frame, text=self.language.get("backup_button"), command=self.create_backup)
         self.backup_btn.pack(pady=5)
         
@@ -514,6 +517,16 @@ class MoneyBoosterGUI:
         else:
             messagebox.showerror(self.language.get("error_title"), "Failed to unlock licenses.")
 
+    def restock_all(self):
+        if not self.current_save_path:
+            messagebox.showerror(self.language.get("error_title"), "No save file selected.")
+            return
+        if self.save_editor.restock_all(self.current_save_path):
+            messagebox.showinfo(self.language.get("success_title"), self.language.get("success_restock"))
+            self.update_info()
+        else:
+            messagebox.showerror(self.language.get("error_title"), "Failed to restock.")
+
     def set_max_money(self):
         self.money_entry.delete(0, tk.END)
         self.money_entry.insert(0, "9999999")
@@ -576,6 +589,7 @@ class MoneyBoosterGUI:
         self.repair_btn.config(text=self.language.get("repair_interaction_btn"))
         self.reset_licenses_btn.config(text=self.language.get("reset_licenses_btn"))
         self.unlock_btn.config(text=self.language.get("unlock_licenses_button"))
+        self.restock_btn.config(text=self.language.get("restock_button"))
         self.backup_btn.config(text=self.language.get("backup_button"))
         self.restore_btn.config(text=self.language.get("restore_button"))
         self.create_menu()

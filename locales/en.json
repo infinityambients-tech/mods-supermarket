@@ -55,5 +55,7 @@
     "update_now": "Update Now",
     "update_later": "Later",
     "updating": "Updating...",
-    "update_ready": "Update ready! The application will now restart to apply changes."
+    "update_ready": "Update ready! The application will now restart to apply changes.",
+    "restock_button": "Restock Everything",
+    "success_restock": "All shelves and storage have been restocked!"
 }

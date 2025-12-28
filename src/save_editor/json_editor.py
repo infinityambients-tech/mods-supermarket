@@ -170,6 +170,50 @@ class SaveEditor:
                 modified = True
         return modified
 
+    def restock_all(self, save_path):
+        """Fills all shelves and storage racks to max capacity."""
+        try:
+            self.backup_system.create_backup(save_path)
+            with open(save_path, 'r', encoding='utf-8') as f:
+                save_data = json.load(f)
+            
+            modified = False
+            
+            # 1. Restock Displays (Shelves, Fridges, etc.)
+            prog = save_data.get('Progression', {}).get('value', {})
+            displays = prog.get('DisplayDatas', [])
+            for display in displays:
+                # Regular products in displays
+                products = display.get('ProductDatas', [])
+                for prod in products:
+                    if isinstance(prod, dict) and 'ProductCount' in prod:
+                        # Max capacity varies, but 100 is safe for most and effectively 'full'
+                        prod['ProductCount'] = 50 
+                        modified = True
+                
+                # Stacked products (like toilet paper)
+                if 'StackCount' in display:
+                    display['StackCount'] = 20
+                    modified = True
+
+            # 2. Restock Storage Racks
+            storage = save_data.get('Storage', {})
+            racks = storage.get('value', {}).get('RackDatas', [])
+            for rack in racks:
+                slots = rack.get('SlotDatas', [])
+                for slot in slots:
+                    if isinstance(slot, dict) and 'ProductCount' in slot:
+                        slot['ProductCount'] = 50
+                        modified = True
+
+            if modified:
+                self._save_es3_format(save_path, save_data)
+                return True
+            return False
+        except Exception as e:
+            print(f"Error restocking: {e}")
+            return False
+
     def _modify_multiple_fields_generic(self, save_path, keys, value, operation):
         try:
             self.backup_system.create_backup(save_path)

@@ -6,12 +6,18 @@ import shutil
 from pathlib import Path
 
 class GitHubUpdater:
-    LOG_FILE = "updater_log.txt"
+    LOG_FILE = os.path.join("logs", "updater_log.txt")
     LOCK_FILE = "update.lock"
 
     def __init__(self, repo_owner, repo_name, current_version):
         self.repo_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
         self.current_version = current_version
+        
+        # Ensure logs directory exists
+        log_dir = os.path.dirname(self.LOG_FILE)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+            
         self._log(f"Updater initialized. Local version: {current_version}")
         self._cleanup_stale_lock()
 
@@ -129,8 +135,8 @@ class GitHubUpdater:
             batch_content = f"""@echo off
 setlocal
 set LOG_FILE={self.LOG_FILE}
-echo [%DATE% %TIME%] --- BATCH UPDATE STARTED --- >> %LOG_FILE%
-echo [%DATE% %TIME%] Waiting for process {pid} to exit... >> %LOG_FILE%
+echo [%DATE% %TIME%] --- BATCH UPDATE STARTED --- >> "%LOG_FILE%"
+echo [%DATE% %TIME%] Waiting for process {pid} to exit... >> "%LOG_FILE%"
 
 :WAIT_LOOP
 tasklist /FI "PID eq {pid}" 2>NUL | find /I /N "{pid}">NUL
@@ -139,25 +145,25 @@ if "%ERRORLEVEL%"=="0" (
     goto WAIT_LOOP
 )
 
-echo [%DATE% %TIME%] Process {pid} exited. Proceeding with file replacement. >> %LOG_FILE%
+echo [%DATE% %TIME%] Process {pid} exited. Proceeding with file replacement. >> "%LOG_FILE%"
 
-echo [%DATE% %TIME%] Copying files from {self.content_dir.absolute()}... >> %LOG_FILE%
-xcopy /s /e /y "{self.content_dir.absolute()}\\*" . >> %LOG_FILE% 2>&1
+echo [%DATE% %TIME%] Copying files from {self.content_dir.absolute()}... >> "%LOG_FILE%"
+xcopy /s /e /y "{self.content_dir.absolute()}\\*" . >> "%LOG_FILE%" 2>&1
 
 if %ERRORLEVEL% NEQ 0 (
-    echo [%DATE% %TIME%] ERROR: xcopy failed with code %ERRORLEVEL% >> %LOG_FILE%
+    echo [%DATE% %TIME%] ERROR: xcopy failed with code %ERRORLEVEL% >> "%LOG_FILE%"
 ) else (
-    echo [%DATE% %TIME%] File replacement successful. >> %LOG_FILE%
+    echo [%DATE% %TIME%] File replacement successful. >> "%LOG_FILE%"
 )
 
-echo [%DATE% %TIME%] Cleaning up... >> %LOG_FILE%
-rd /s /q "update_temp" >> %LOG_FILE% 2>&1
-del "{self.LOCK_FILE}" >> %LOG_FILE% 2>&1
+echo [%DATE% %TIME%] Cleaning up... >> "%LOG_FILE%"
+rd /s /q "update_temp" >> "%LOG_FILE%" 2>&1
+del "{self.LOCK_FILE}" >> "%LOG_FILE%" 2>&1
 
-echo [%DATE% %TIME%] Restarting application... >> %LOG_FILE%
-start python money_mods.py >> %LOG_FILE% 2>&1
+echo [%DATE% %TIME%] Restarting application... >> "%LOG_FILE%"
+start python money_mods.py >> "%LOG_FILE%" 2>&1
 
-echo [%DATE% %TIME%] Update completed. >> %LOG_FILE%
+echo [%DATE% %TIME%] Update completed. >> "%LOG_FILE%"
 del "%~f0"
 """
             with open("updater_helper.bat", "w") as f:
