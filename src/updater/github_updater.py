@@ -6,8 +6,8 @@ import shutil
 from pathlib import Path
 
 class GitHubUpdater:
-    LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "logs", "updater_log.txt")
-    LOCK_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "update.lock")
+    LOG_FILE = os.path.join("logs", "updater_log.txt")
+    LOCK_FILE = "update.lock"
 
     def __init__(self, repo_owner, repo_name, current_version):
         self.repo_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
@@ -57,8 +57,6 @@ class GitHubUpdater:
     
     def check_for_updates(self):
         try:
-            self._log(f"Starting update check from {self.repo_url}...")
-            print(f"DEBUG: Checking updates from {self.repo_url}")
             response = requests.get(f"{self.repo_url}/releases/latest", timeout=5)
             if response.status_code == 200:
                 latest_release = response.json()
@@ -83,14 +81,9 @@ class GitHubUpdater:
             return {'available': False}
 
     def is_newer(self, remote_version):
-        import re
         try:
-            def parse_version(v):
-                # Extract all number sequences from the string
-                return [int(x) for x in re.findall(r'\d+', v)]
-            
-            v1_parts = parse_version(self.current_version)
-            v2_parts = parse_version(remote_version)
+            v1_parts = [int(p) for p in self.current_version.split('.')]
+            v2_parts = [int(p) for p in remote_version.split('.')]
             return v2_parts > v1_parts
         except:
             return False
@@ -136,19 +129,9 @@ class GitHubUpdater:
         try:
             pid = os.getpid()
             self._log(f"Preparing update script. Waiting for PID {pid}")
-
-            # SAFETY: Remove updater_log.txt from source (update package) to prevent
-            # "Sharing violation" when xcopy tries to overwrite the log file we are currently writing to.
-            potential_log_in_update = self.content_dir / "logs" / "updater_log.txt"
-            if potential_log_in_update.exists():
-                try:
-                    os.remove(potential_log_in_update)
-                    self._log("Removed conflicting updater_log.txt from update package.")
-                except Exception as e:
-                    self._log(f"Warning: Could not remove log from update package: {e}")
             
             # Use absolute path for logs in batch script to avoid CWD issues
-            log_abs_path = self.LOG_FILE
+            log_abs_path = os.path.abspath(self.LOG_FILE)
             
             # Create a batch script to replace files after app closes
             # It waits for the parent process to exit, moves files, deletes itself
