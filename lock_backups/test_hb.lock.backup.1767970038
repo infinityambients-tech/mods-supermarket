@@ -1,0 +1,10 @@
+{
+  "pid": 6024,
+  "timestamp": 1767969917.479413,
+  "process_name": "python.exe",
+  "update_id": "hb-test",
+  "start_time": "2026-01-09T14:45:17.479565Z",
+  "timeout_seconds": 300,
+  "step": "acquiring_lock",
+  "version": "2.0"
+}

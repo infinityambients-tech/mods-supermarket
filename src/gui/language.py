@@ -27,5 +27,5 @@ class Language:
             print(f"Error loading locale {code}: {e}")
         return False
 
-    def get(self, key):
-        return self.translations.get(key, key)
+    def get(self, key, default=None):
+        return self.translations.get(key, default if default is not None else key)
