@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import configparser
 from pathlib import Path
+import time
+import os
 
 from src.gui.themes import Theme
 from src.gui.language import Language
@@ -17,6 +19,8 @@ from src.save_detection.detection_gui import SaveDetectionGUI
 # Update System
 from src.updater.github_updater import GitHubUpdater
 from src.updater.version_check import VersionCheck
+from src.gui.lock_error_dialog import LockErrorDialog
+from src.gui.fixed_stats_gui import FixedStatsGUI
 
 class MoneyBoosterGUI:
     def __init__(self):
@@ -43,15 +47,13 @@ class MoneyBoosterGUI:
         
         self.current_save_path = None
         
-        self.current_save_path = None
-
-        # Initialize Updater (Real repository)
-        self.local_version = VersionCheck.get_local_version()
-        self.updater = GitHubUpdater("infinityambients-tech", "mods-supermarket", self.local_version)
-        
         self.apply_theme()
         self.setup_ui()
         self.load_initial_data()
+        
+        # Initialize Updater (Real repository)
+        self.local_version = VersionCheck.get_local_version()
+        self.updater = GitHubUpdater("infinityambients-tech", "mods-supermarket", self.local_version)
         
         # Check for updates after UI loads
         self.root.after(2000, self.check_for_updates)
@@ -73,8 +75,7 @@ class MoneyBoosterGUI:
         style.map('TNotebook.Tab', background=[('selected', theme['highlight'])])
 
     def setup_ui(self):
-        title = f"{self.language.get('app_title')} v{self.local_version}"
-        self.root.title(title)
+        self.root.title(self.language.get("app_title"))
         
         # Notebook for Tabs
         self.notebook = ttk.Notebook(self.root)
@@ -94,6 +95,12 @@ class MoneyBoosterGUI:
         self.objects_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.objects_tab, text=self.language.get("tab_objects"))
         self._setup_objects_tab(self.objects_tab)
+
+        # Tab X: Stats Editor (Fixed)
+        self.stats_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.stats_tab, text="Stats Editor")
+        # FixedStatsGUI needs a callback to get current save path
+        self.fixed_stats_gui = FixedStatsGUI(self.stats_tab, get_save_path_cb=lambda: str(self.current_save_path) if self.current_save_path else None)
 
         # Tab 4: Advanced Detection
         self.detection_tab = ttk.Frame(self.notebook)
@@ -329,6 +336,10 @@ class MoneyBoosterGUI:
         file_menu.add_command(label=self.language.get("menu_select_save"), command=self.manual_select_save)
         file_menu.add_separator()
         file_menu.add_command(label=self.language.get("menu_exit"), command=self.root.quit)
+
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label=self.language.get("menu_help", "Help"), menu=help_menu)
+        help_menu.add_command(label=self.language.get("menu_check_updates", "Check for Updates"), command=self.manual_update_check)
 
     def load_initial_data(self):
         found_file = self.save_manager.find_save_file()
@@ -633,13 +644,73 @@ class MoneyBoosterGUI:
         self.create_menu()
 
     def check_for_updates(self):
-        """Checks for new version on GitHub."""
+        """Checks for new version on GitHub (Auto-check)."""
+        # Only show prompt if update is found
         update_info = self.updater.check_for_updates()
         if update_info.get('available'):
             latest_v = update_info['version']
             msg = self.language.get("update_desc").format(latest_v)
             if messagebox.askyesno(self.language.get("update_available"), msg):
                 self.perform_update(update_info['download_url'])
+            return
+
+        # If update not available, check for active lock and show dialog if necessary
+        try:
+            lock_data = self.updater.lock_manager._read_lock_file()
+            if lock_data and 'pid' in lock_data and self.updater.lock_manager._is_process_alive(lock_data.get('pid')):
+                age = time.time() - lock_data.get('timestamp', os.path.getmtime(self.updater.lock_manager.lock_file))
+                lock_error = {
+                    'pid': lock_data.get('pid'),
+                    'age_seconds': age,
+                    'process_alive': True,
+                    'details': lock_data
+                }
+
+                def retry_cb():
+                    self.root.after(30000, self.check_for_updates)
+
+                def force_cb():
+                    # Attempt to force cleanup then proceed to update
+                    try:
+                        self.updater.lock_manager._force_cleanup_stale_lock(lock_data)
+                    except Exception:
+                        pass
+
+                    info = self.updater.check_for_updates()
+                    if info.get('available'):
+                        self.perform_update(info['download_url'])
+                    else:
+                        messagebox.showinfo(self.language.get('no_update_title', 'Up to Date'), self.language.get('no_update_msg', 'No update available.'))
+
+                def safe_cb():
+                    try:
+                        self.updater.lock_manager._clear_stale_lock(lock_data)
+                    except Exception:
+                        pass
+
+                    info = self.updater.check_for_updates()
+                    if info.get('available'):
+                        self.perform_update(info['download_url'])
+                    else:
+                        messagebox.showinfo(self.language.get('no_update_title', 'Up to Date'), self.language.get('no_update_msg', 'No update available.'))
+
+                LockErrorDialog(self.root, lock_error, retry_cb, force_cb, safe_cb)
+        except Exception:
+            pass
+
+    def manual_update_check(self):
+        """Checks for new version on GitHub (Manual check)."""
+        update_info = self.updater.check_for_updates()
+        if update_info.get('available'):
+            latest_v = update_info['version']
+            msg = self.language.get("update_desc").format(latest_v)
+            if messagebox.askyesno(self.language.get("update_available"), msg):
+                self.perform_update(update_info['download_url'])
+        else:
+            msg_format = self.language.get("no_update_msg", "You are using the latest version: {}")
+            # Ensure we format the string if it contains placeholders
+            formatted_msg = msg_format.format(self.local_version) if "{}" in msg_format else msg_format
+            messagebox.showinfo(self.language.get("no_update_title", "Up to Date"), formatted_msg)
 
     def perform_update(self, download_url):
         """Handles the download and application of the update."""

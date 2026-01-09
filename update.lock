@@ -1,0 +1,10 @@
+{
+  "pid": 17056,
+  "timestamp": 1767970227.0160363,
+  "process_name": "python.exe",
+  "update_id": "7ce30900-60f6-4a91-96d6-21b4aa81f2f6",
+  "start_time": "2026-01-09T14:50:27.016165Z",
+  "timeout_seconds": 300,
+  "step": "acquiring_lock",
+  "version": "2.0"
+}

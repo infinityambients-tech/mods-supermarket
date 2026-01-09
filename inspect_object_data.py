@@ -48,9 +48,14 @@ def inspect_objects():
             print("\n--- Progression/value Keys ---")
             if isinstance(val, dict):
                 keys = list(val.keys())
-                print(keys)
+                print(f"Found {len(keys)} keys. Writing to full_keys_dump.txt...")
                 
-                # Filter for suspicious keys
+                with open("full_keys_dump.txt", "w", encoding="utf-8") as dump_file:
+                    for k in keys:
+                        dump_file.write(f"{k}\n")
+                
+                print("Dump complete.")
+                print(keys[:10]) # Print first 10 for sanity check
                 print("\n--- Potential Staff Keys ---")
                 found = False
                 for k in keys:

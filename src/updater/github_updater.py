@@ -4,10 +4,14 @@ import io
 import os
 import shutil
 from pathlib import Path
+import sys
+
+# Advanced lock manager
+from advanced_lock import AdvancedLockManager
 
 class GitHubUpdater:
-    LOG_FILE = os.path.join("logs", "updater_log.txt")
-    LOCK_FILE = "update.lock"
+    LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "logs", "updater_log.txt")
+    LOCK_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "update.lock")
 
     def __init__(self, repo_owner, repo_name, current_version):
         self.repo_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
@@ -19,7 +23,13 @@ class GitHubUpdater:
             os.makedirs(log_dir, exist_ok=True)
             
         self._log(f"Updater initialized. Local version: {current_version}")
-        self._cleanup_stale_lock()
+        # Use AdvancedLockManager for safer lock handling
+        self.lock_manager = AdvancedLockManager(lock_file=self.LOCK_FILE)
+        # Cleanup very old locks on startup
+        try:
+            self.lock_manager.cleanup_all_stale_locks(max_age_hours=1)
+        except Exception:
+            pass
 
     def _log(self, message):
         """Logs message to a file."""
@@ -32,40 +42,35 @@ class GitHubUpdater:
             pass
 
     def _cleanup_stale_lock(self):
-        """Removes lock file if it's older than 5 minutes."""
-        if os.path.exists(self.LOCK_FILE):
-            try:
-                age = os.path.getmtime(self.LOCK_FILE)
-                if (os.path.getmtime(self.LOCK_FILE) - age) > 300:
-                    os.remove(self.LOCK_FILE)
-            except:
-                pass
+        # Legacy helper kept for backward compatibility (no-op now)
+        return
 
     def _acquire_lock(self):
-        if os.path.exists(self.LOCK_FILE):
-            return False
-        with open(self.LOCK_FILE, "w") as f:
-            f.write(str(os.getpid()))
-        return True
+        # Acquire lock via AdvancedLockManager
+        result = self.lock_manager.acquire_lock()
+        return result.get('success', False)
 
     def _release_lock(self):
-        if os.path.exists(self.LOCK_FILE):
-            try:
-                os.remove(self.LOCK_FILE)
-            except:
-                pass
+        try:
+            return self.lock_manager.release_lock()
+        except Exception:
+            return {'success': False}
     
     def check_for_updates(self):
         try:
+            self._log(f"Starting update check from {self.repo_url}...")
+            print(f"DEBUG: Checking updates from {self.repo_url}")
             response = requests.get(f"{self.repo_url}/releases/latest", timeout=5)
             if response.status_code == 200:
                 latest_release = response.json()
                 latest_version = latest_release.get('tag_name', '').lstrip('v')
                 
                 # Check for lock
-                if latest_version != self.current_version and os.path.exists(self.LOCK_FILE):
-                    print("Update in progress by another instance.")
-                    return {'available': False}
+                if latest_version != self.current_version and Path(self.LOCK_FILE).exists():
+                    lock_data = self.lock_manager._read_lock_file()
+                    if lock_data and self.lock_manager._is_process_alive(lock_data.get('pid')):
+                        print("Update in progress by another instance.")
+                        return {'available': False}
 
                 if self.is_newer(latest_version):
                     return {
@@ -127,68 +132,62 @@ class GitHubUpdater:
         """Applies the update by creating a replacement script."""
         if not hasattr(self, 'content_dir') or not self.content_dir.exists():
             return False
-            
+        # Acquire lock
         if not self._acquire_lock():
+            self._log("Could not acquire update lock - another update may be running.")
             return False
 
         try:
             pid = os.getpid()
-            # SAFETY: Aggressively remove the 'logs' directory from the source (update package)
-            # This is critical to prevent "Sharing violation" errors when xcopy tries to
-            # overwrite the log file that this script is currently writing to.
-            # We never want to overwrite user logs with logs from the repo anyway.
-            potential_logs_dir = self.content_dir / "logs"
-            if potential_logs_dir.exists():
+            self._log(f"Preparing update script. Waiting for PID {pid}")
+
+            # SAFETY: Remove updater_log.txt from source (update package) to prevent
+            # "Sharing violation" when xcopy tries to overwrite the log file we are currently writing to.
+            potential_log_in_update = self.content_dir / "logs" / "updater_log.txt"
+            if potential_log_in_update.exists():
                 try:
-                    shutil.rmtree(potential_logs_dir)
-                    self._log("Removed conflicting 'logs' directory from update package.")
+                    os.remove(potential_log_in_update)
+                    self._log("Removed conflicting updater_log.txt from update package.")
                 except Exception as e:
-                    self._log(f"Warning: Could not remove 'logs' dir from update package: {e}")
+                    self._log(f"Warning: Could not remove log from update package: {e}")
             
             # Use absolute path for logs in batch script to avoid CWD issues
-            log_abs_path = os.path.abspath(self.LOG_FILE)
+            log_abs_path = self.LOG_FILE
             
             # Create a batch script to replace files after app closes
             # It waits for the parent process to exit, moves files, deletes itself
+            # Read lock to get update_id
+            lock_data = None
+            try:
+                lock_data = self.lock_manager._read_lock_file()
+            except Exception:
+                lock_data = None
+
+            update_id = lock_data.get('update_id') if lock_data else ''
+
+            # Create a small batch that invokes the Python finalizer. The finalizer will
+            # wait for PID to exit, copy files, and safely remove the lock only if it matches
+            # the expected update_id.
+            python_exe = sys.executable
+            finalizer_cmd = f'"{python_exe}" "{Path(os.path.abspath("finalize_update.py")).as_posix()}" --pid {pid} --content_dir "{self.content_dir.absolute()}" --lock_file "{self.LOCK_FILE}" --update_id "{update_id}" --log "{log_abs_path}"'
+
             batch_content = f"""@echo off
 setlocal
 set LOG_FILE={log_abs_path}
 echo [%DATE% %TIME%] --- BATCH UPDATE STARTED --- >> "%LOG_FILE%"
-echo [%DATE% %TIME%] Waiting for process {pid} to exit... >> "%LOG_FILE%"
-
-:WAIT_LOOP
-tasklist /FI "PID eq {pid}" 2>NUL | find /I /N "{pid}">NUL
-if "%ERRORLEVEL%"=="0" (
-    timeout /t 1 /nobreak > nul
-    goto WAIT_LOOP
-)
-
-echo [%DATE% %TIME%] Process {pid} exited. Proceeding with file replacement. >> "%LOG_FILE%"
-
-echo [%DATE% %TIME%] Copying files from {self.content_dir.absolute()}... >> "%LOG_FILE%"
-xcopy /s /e /y "{self.content_dir.absolute()}\\*" . >> "%LOG_FILE%" 2>&1
-
-if %ERRORLEVEL% NEQ 0 (
-    echo [%DATE% %TIME%] ERROR: xcopy failed with code %ERRORLEVEL% >> "%LOG_FILE%"
-) else (
-    echo [%DATE% %TIME%] File replacement successful. >> "%LOG_FILE%"
-)
-
-echo [%DATE% %TIME%] Cleaning up... >> "%LOG_FILE%"
-rd /s /q "update_temp" >> "%LOG_FILE%" 2>&1
-del "{self.LOCK_FILE}" >> "%LOG_FILE%" 2>&1
-
+echo [%DATE% %TIME%] Launching finalizer... >> "%LOG_FILE%"
+{finalizer_cmd}
+echo [%DATE% %TIME%] Finalizer executed. >> "%LOG_FILE%"
 echo [%DATE% %TIME%] Restarting application... >> "%LOG_FILE%"
-start python money_mods.py >> "%LOG_FILE%" 2>&1
-
+start "" "{python_exe}" money_mods.py >> "%LOG_FILE%" 2>&1
 echo [%DATE% %TIME%] Update completed. >> "%LOG_FILE%"
 del "%~f0"
 """
+
             with open("updater_helper.bat", "w") as f:
                 f.write(batch_content)
-            
-            self._log("Update script created. Launching...")
-            # Run the batch script and exit current app
+
+            self._log("Update script created. Launching finalizer batch...")
             os.startfile("updater_helper.bat")
             return True
         except Exception as e:
